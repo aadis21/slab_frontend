@@ -34,7 +34,12 @@ interface User {
   phone: string;
   email?: string;
   role: 'user' | 'admin';
-  walletBalance: number; // stored in cents
+  wallet: {
+    direct: number;
+    level: number;
+    reward: number;
+    topup: number;
+  };
   isActive: boolean;
   referralCode: string;
   activePlan?: {
@@ -129,14 +134,18 @@ export default function AdminUsers() {
       return;
     }
 
-    const headers = ['ID', 'Name', 'Phone', 'Email', 'Role', 'Wallet Balance ($)', 'Active Status', 'Active Plan', 'Joined Date'];
+    const headers = ['ID', 'Name', 'Phone', 'Email', 'Role', 'Total Wallet ($)', 'Direct ($)', 'Level ($)', 'Reward ($)', 'Topup ($)', 'Active Status', 'Active Plan', 'Joined Date'];
     const rows = users.map((u) => [
       u._id,
       u.name,
       `'${u.phone}`, // Escape phone formatting for Excel
       u.email || 'N/A',
       u.role.toUpperCase(),
-      (u.walletBalance / 100).toFixed(2),
+      ((u.wallet.direct + u.wallet.level + u.wallet.reward + u.wallet.topup) / 100).toFixed(2),
+      (u.wallet.direct / 100).toFixed(2),
+      (u.wallet.level / 100).toFixed(2),
+      (u.wallet.reward / 100).toFixed(2),
+      (u.wallet.topup / 100).toFixed(2),
       u.isActive ? 'Active' : 'Inactive',
       u.activePlan?.name || 'None',
       new Date(u.createdAt).toLocaleDateString(),
@@ -160,14 +169,14 @@ export default function AdminUsers() {
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const walletBalance = addBalance ? Math.round(Number(addBalance) * 100) : 0;
+      const walletTopup = addBalance ? Math.round(Number(addBalance) * 100) : 0;
       await api.post('/user/admin/users', {
         name: addName,
         phone: addPhone,
         email: addEmail || undefined,
         password: addPassword,
         role: addRole,
-        walletBalance,
+        walletTopup,
         isActive: true,
       });
       toast.success('New user created successfully!');
@@ -193,7 +202,7 @@ export default function AdminUsers() {
     setEditPhone(u.phone);
     setEditEmail(u.email || '');
     setEditRole(u.role);
-    setEditBalance((u.walletBalance / 100).toString());
+    setEditBalance(((u.wallet.direct + u.wallet.level + u.wallet.reward + u.wallet.topup) / 100).toString());
     setEditIsActive(u.isActive);
     setIsEditModalOpen(true);
   };
@@ -203,13 +212,13 @@ export default function AdminUsers() {
     e.preventDefault();
     if (!editingUserId) return;
     try {
-      const walletBalance = editBalance ? Math.round(Number(editBalance) * 100) : 0;
+      const walletTopup = editBalance ? Math.round(Number(editBalance) * 100) : 0;
       await api.patch(`/user/admin/users/${editingUserId}`, {
         name: editName,
         phone: editPhone,
         email: editEmail || '',
         role: editRole,
-        walletBalance,
+        walletTopup,
         isActive: editIsActive,
       });
       toast.success('User updated successfully!');
@@ -370,7 +379,8 @@ export default function AdminUsers() {
                       </span>
                     </td>
                     <td className="px-6 py-4.5 font-mono font-bold text-emerald-400 text-base">
-                      {formatCurrency(u.walletBalance)}
+                      {formatCurrency(u.wallet.direct + u.wallet.level + u.wallet.reward + u.wallet.topup)}
+                      <div className="text-[10px] text-slate-500 font-normal mt-0.5">D:{formatCurrency(u.wallet.direct)} L:{formatCurrency(u.wallet.level)}</div>
                     </td>
                     <td className="px-6 py-4.5">
                       {u.activePlan ? (

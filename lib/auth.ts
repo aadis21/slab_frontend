@@ -30,4 +30,10 @@ export interface AuthUser {
   email?: string;
   role: string;
   referralCode: string;
+  wallet?: {
+    direct: number;
+    level: number;
+    reward: number;
+    topup: number;
+  };
 }

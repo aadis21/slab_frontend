@@ -27,7 +27,12 @@ interface WithdrawalRequest {
     _id: string;
     name: string;
     phone: string;
-    walletBalance: number;
+    wallet: {
+      direct: number;
+      level: number;
+      reward: number;
+      topup: number;
+    };
   };
   amountCents: number;
   walletAddress: string;

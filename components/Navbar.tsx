@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   Heart,
+  Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ import DonationModal from '@/components/DonationModal';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/plans', label: 'Plans', icon: TrendingUp },
+  { href: '/wallet', label: 'My Wallet', icon: Wallet },
   { href: '/referral', label: 'Refer & Earn', icon: Users },
 ];
 
